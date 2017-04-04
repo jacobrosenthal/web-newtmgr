@@ -20,7 +20,7 @@
     "json-loader": "^0.5.4",
     "lodash.has": "^4.5.2",
     "lodash.hasin": "^4.5.2",
-    "newtmgr": "^0.1.2",
+    "newtmgr": "^0.1.7",
     "noble": "^1.8.0",
     "through2": "^2.0.3",
     "utf-8-validate": "^1.2.1",
