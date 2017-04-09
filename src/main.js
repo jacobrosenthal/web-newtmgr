@@ -1,10 +1,10 @@
-var from2 = require('from2');
-var through2 = require('through2');
-var to2 = require('flush-write-stream');
-
+var pull = require('pull-stream')
+var toPull = require('stream-to-pull-stream')
+var through = require('pull-through')
 var nmgr = require('newtmgr').nmgr;
 var ble = require('newtmgr').ble;
 var utility = require('newtmgr').utility;
+var Sourcer = require('newtmgr').Sourcer;
 
 var options = {
   services: ['8d53dc1d1db74cd3868b8a527460aa84'],
@@ -31,57 +31,62 @@ var connect = function(event) {
   });
 }
 
-var reset = function(event) {
-  characteristic.write(nmgr.generateResetBuffer(), true);
 
-  var stream = utility.emitterStream(characteristic)
-  stream
-    .pipe(nmgr.decode())
-    .pipe(append())
-    .pipe(to2.obj(function (chunk, enc, cb) {
-      stream.push(null); //close previous instance of emitterStream so we dont have dangling listeners
-      return cb()
-    }));
+var reset = function(event) {
+  var sourcer = Sourcer([nmgr.generateResetBuffer()]);
+
+  pull(
+    sourcer.source(),
+    ble.duplexPull(characteristic),
+    toPull(nmgr.decode()),
+    appendPull(),
+    pull.drain(sourcer.next.bind(sourcer), function(err){
+      console.log("finished with status:", err);
+    })
+  );
 }
 
 var list = function(event) {
-  characteristic.write(nmgr.generateListBuffer(), true);
+  var sourcer = Sourcer([nmgr.generateListBuffer()]);
 
-  var stream = utility.emitterStream(characteristic)
-  stream
-    .pipe(nmgr.decode())
-    .pipe(utility.hashToStringTransform())
-    .pipe(append())
-    .pipe(to2.obj(function (chunk, enc, cb) {
-      stream.push(null); //close previous instance of emitterStream so we dont have dangling listeners
-      return cb()
-    }));
+  pull(
+    sourcer.source(),
+    ble.duplexPull(characteristic),
+    toPull(nmgr.decode()),
+    toPull(utility.hashToStringTransform()),
+    appendPull(),
+    pull.drain(sourcer.next.bind(sourcer), function(err){
+      console.log("finished with status:", err);
+    })
+  );
 }
 
 var test = function(event) {
-  characteristic.write(nmgr.generateTestBuffer(hashInput.value), true);
+  var sourcer = Sourcer([nmgr.generateTestBuffer(argv.hash)]);
 
-  var stream = utility.emitterStream(characteristic)
-  stream
-    .pipe(nmgr.decode())
-    .pipe(append())
-    .pipe(to2.obj(function (chunk, enc, cb) {
-      stream.push(null); //close previous instance of emitterStream so we dont have dangling listeners
-      return cb()
-    }));
+  pull(
+    sourcer.source(),
+    ble.duplexPull(characteristic),
+    toPull(nmgr.decode()),
+    appendPull(),
+    pull.drain(sourcer.next.bind(sourcer), function(err){
+      console.log("finished with status:", err);
+    })
+  );
 }
 
 var confirm = function(event) {
-  characteristic.write(nmgr.generateConfirmBuffer(hashInput.value), true);
+  var sourcer = Sourcer([nmgr.generateConfirmBuffer(argv.hash)]);
 
-  var stream = utility.emitterStream(characteristic)
-  stream
-    .pipe(nmgr.decode())
-    .pipe(append())
-    .pipe(to2.obj(function (chunk, enc, cb) {
-      stream.push(null); //close previous instance of emitterStream so we dont have dangling listeners
-      return cb()
-    }));
+  pull(
+    sourcer.source(),
+    ble.duplexPull(characteristic),
+    toPull(nmgr.decode()),
+    appendPull(),
+    pull.drain(sourcer.next.bind(sourcer), function(err){
+      console.log("finished with status:", err);
+    })
+  );
 }
 
 document.getElementById("connectBtn").addEventListener("click", connect.bind(this), false);
@@ -90,15 +95,11 @@ document.getElementById("listBtn").addEventListener("click", list.bind(this), fa
 document.getElementById("testBtn").addEventListener("click", test.bind(this), false);
 document.getElementById("confirmBtn").addEventListener("click", confirm.bind(this), false);
 
-
-var append = function() {
-
-  function transform(chunk, enc, cb){
-    var charDiv = document.createElement("div");
-    charDiv.innerHTML = JSON.stringify(chunk);
-    output.appendChild(charDiv);
-    return cb(null, chunk);
-  }
-
-  return through2.obj(transform);
-}
+var appendPull = through(function (data) {
+  var charDiv = document.createElement("div");
+  charDiv.innerHTML = JSON.stringify(chunk);
+  output.appendChild(charDiv);
+  this.queue(data)
+}, function (end) {
+  this.queue(null)
+})

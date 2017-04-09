@@ -1,7 +1,7 @@
 # web-newtmgr -- node-newtmgr packaged for front end
 Proof of concept packaging node-newtmgr for front end. 
 
-This app is up and running at: https://nnewtmgr.surge.sh
+This app is up and running at: https://nnewtmgr.surge.sh (note the https which is required for webble)
 
 Or you can run it locally:
 
