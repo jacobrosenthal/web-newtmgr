@@ -1,6 +1,6 @@
 var pull = require('pull-stream')
-var toPull = require('stream-to-pull-stream')
 var through = require('pull-through')
+var toPull = require('stream-to-pull-stream')
 var nmgr = require('newtmgr').nmgr;
 var ble = require('newtmgr').ble;
 var utility = require('newtmgr').utility;
@@ -13,14 +13,12 @@ var options = {
   nowait: true //hack for webble, whose statechange isnt good yet
 };
 
-var output = document.getElementById('output');
-var hashInput = document.getElementById('hashInput');
-var nameInput = document.getElementById('nameInput');
-
 var characteristic;
 
 //need to connect onclick for permissions reasons
 var connect = function(event) {
+  var nameInput = document.getElementById('nameInput');
+
   if(nameInput.value){
     options.name = nameInput.value;
   }
@@ -39,7 +37,7 @@ var reset = function(event) {
     sourcer.source(),
     ble.duplexPull(characteristic),
     toPull(nmgr.decode()),
-    appendPull(),
+    appendDomPull('output'),
     pull.drain(sourcer.next.bind(sourcer), function(err){
       console.log("finished with status:", err);
     })
@@ -47,14 +45,14 @@ var reset = function(event) {
 }
 
 var list = function(event) {
-  var sourcer = Sourcer([nmgr.generateListBuffer()]);
+  var sourcer = Sourcer([nmgr.generateImageListBuffer()]);
 
   pull(
     sourcer.source(),
     ble.duplexPull(characteristic),
     toPull(nmgr.decode()),
     toPull(utility.hashToStringTransform()),
-    appendPull(),
+    appendDomPull('output'),
     pull.drain(sourcer.next.bind(sourcer), function(err){
       console.log("finished with status:", err);
     })
@@ -62,13 +60,18 @@ var list = function(event) {
 }
 
 var test = function(event) {
-  var sourcer = Sourcer([nmgr.generateTestBuffer(argv.hash)]);
+  var hashInput = document.getElementById('hashInput');
+
+  var cmd = {};
+  cmd.confirm = false;
+  cmd.hash = Buffer.from(hashInput);
+  var sourcer = Sourcer([nmgr.generateImageTestBuffer(cmd)]);
 
   pull(
     sourcer.source(),
     ble.duplexPull(characteristic),
     toPull(nmgr.decode()),
-    appendPull(),
+    appendDomPull('output'),
     pull.drain(sourcer.next.bind(sourcer), function(err){
       console.log("finished with status:", err);
     })
@@ -76,13 +79,18 @@ var test = function(event) {
 }
 
 var confirm = function(event) {
-  var sourcer = Sourcer([nmgr.generateConfirmBuffer(argv.hash)]);
+  var hashInput = document.getElementById('hashInput');
+
+  var cmd = {};
+  cmd.confirm = true;
+  cmd.hash = Buffer.from(hashInput);
+  var sourcer = Sourcer([nmgr.generateImageConfirmBuffer(cmd)]);
 
   pull(
     sourcer.source(),
     ble.duplexPull(characteristic),
     toPull(nmgr.decode()),
-    appendPull(),
+    appendDomPull('output'),
     pull.drain(sourcer.next.bind(sourcer), function(err){
       console.log("finished with status:", err);
     })
@@ -95,11 +103,15 @@ document.getElementById("listBtn").addEventListener("click", list.bind(this), fa
 document.getElementById("testBtn").addEventListener("click", test.bind(this), false);
 document.getElementById("confirmBtn").addEventListener("click", confirm.bind(this), false);
 
-var appendPull = through(function (data) {
-  var charDiv = document.createElement("div");
-  charDiv.innerHTML = JSON.stringify(chunk);
-  output.appendChild(charDiv);
-  this.queue(data)
-}, function (end) {
-  this.queue(null)
-})
+
+var appendDomPull = function(elementName){
+  var output = document.getElementById(elementName);
+  return through(function (data) {
+    var charDiv = document.createElement("div");
+    charDiv.innerHTML = JSON.stringify(data);
+    output.appendChild(charDiv);
+    this.queue(data)
+  }, function (end) {
+    this.queue(null)
+  })
+}
