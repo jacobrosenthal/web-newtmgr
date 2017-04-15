@@ -13,8 +13,6 @@ var options = {
   nowait: true //hack for webble, whose statechange isnt good yet
 };
 
-var characteristic;
-
 //need to connect onclick for permissions reasons
 var connect = function(event) {
   var nameInput = document.getElementById('nameInput');
@@ -23,14 +21,18 @@ var connect = function(event) {
     options.name = nameInput.value;
   }
 
-  ble.connect(options, function(err, _characteristic){
+  ble.connect(options, function(err, characteristic){
     console.log("subscribed and ready");
-    characteristic = _characteristic;
+
+    document.getElementById("resetBtn").addEventListener("click", reset.bind(this, characteristic), false);
+    document.getElementById("listBtn").addEventListener("click", list.bind(this, characteristic), false);
+    document.getElementById("testBtn").addEventListener("click", test.bind(this, characteristic), false);
+    document.getElementById("confirmBtn").addEventListener("click", confirm.bind(this, characteristic), false);
   });
 }
 
 
-var reset = function(event) {
+var reset = function(characteristic, event) {
   var sourcer = Sourcer([nmgr.generateResetBuffer()]);
 
   pull(
@@ -44,7 +46,7 @@ var reset = function(event) {
   );
 }
 
-var list = function(event) {
+var list = function(characteristic, event) {
   var sourcer = Sourcer([nmgr.generateImageListBuffer()]);
 
   pull(
@@ -59,7 +61,7 @@ var list = function(event) {
   );
 }
 
-var test = function(event) {
+var test = function(characteristic, event) {
   var hashInput = document.getElementById('hashInput');
 
   var cmd = {};
@@ -78,7 +80,7 @@ var test = function(event) {
   );
 }
 
-var confirm = function(event) {
+var confirm = function(characteristic, event) {
   var hashInput = document.getElementById('hashInput');
 
   var cmd = {};
@@ -98,10 +100,6 @@ var confirm = function(event) {
 }
 
 document.getElementById("connectBtn").addEventListener("click", connect.bind(this), false);
-document.getElementById("resetBtn").addEventListener("click", reset.bind(this), false);
-document.getElementById("listBtn").addEventListener("click", list.bind(this), false);
-document.getElementById("testBtn").addEventListener("click", test.bind(this), false);
-document.getElementById("confirmBtn").addEventListener("click", confirm.bind(this), false);
 
 
 var appendDomPull = function(elementName){
