@@ -24,10 +24,21 @@ var connect = function(event) {
   ble.connect(options, function(err, characteristic){
     console.log("subscribed and ready");
 
-    document.getElementById("resetBtn").addEventListener("click", reset.bind(this, characteristic), false);
-    document.getElementById("listBtn").addEventListener("click", list.bind(this, characteristic), false);
-    document.getElementById("testBtn").addEventListener("click", test.bind(this, characteristic), false);
-    document.getElementById("confirmBtn").addEventListener("click", confirm.bind(this, characteristic), false);
+    var resetBtn = document.getElementById("resetBtn");
+    resetBtn.addEventListener("click", reset.bind(this, characteristic), false);
+    resetBtn.classList.remove("mdl-button--disabled");
+    var listBtn = document.getElementById("listBtn");
+    listBtn.addEventListener("click", list.bind(this, characteristic), false);
+    listBtn.classList.remove("mdl-button--disabled");
+    var testBtn = document.getElementById("testBtn")
+    testBtn.addEventListener("click", test.bind(this, characteristic), false);
+    testBtn.classList.remove("mdl-button--disabled");
+    var confirmBtn = document.getElementById("confirmBtn")
+    confirmBtn.addEventListener("click", confirm.bind(this, characteristic), false);
+    confirmBtn.classList.remove("mdl-button--disabled");
+    var uploadBtn = document.getElementById("uploadBtn");
+    uploadBtn.addEventListener("click", upload.bind(this, characteristic), false);
+    uploadBtn.classList.remove("mdl-button--disabled");
   });
 }
 
@@ -99,6 +110,29 @@ var confirm = function(characteristic, event) {
   );
 }
 
+var upload = function(characteristic, event) {
+
+  var firmwareUpload = function(err, data){
+    //has to be 32 or larger or imgmgr returns rc: 3, ive seen 450+ work, newt tool uses 87
+    var maxFrag = 87;
+    var chunks = split(data, maxFrag);
+    var sourcer = Sourcer(chunks);
+
+    pull(
+      sourcer.source(),
+      toPull(nmgr.imageUploadTransform(data.length)),
+      ble.duplexPull(characteristic),
+      toPull(nmgr.decode()),
+      appendDomPull('output'),
+      pull.drain(sourcer.next.bind(sourcer), function(err){
+        console.log("finished with status:", err);
+      })
+    );
+  }
+
+  getFile(firmwareUpload);
+}
+
 document.getElementById("connectBtn").addEventListener("click", connect.bind(this), false);
 
 
@@ -112,4 +146,38 @@ var appendDomPull = function(elementName){
   }, function (end) {
     this.queue(null)
   })
+}
+
+var split = function(buffer, size){
+  if (buffer.length < size)
+    return [buffer];
+
+  var chunks = [];
+  var idx = 0;
+  while(idx<buffer.length){
+    chunks.push(buffer.slice(idx,idx+size))
+    idx = idx+size;
+  }
+  return chunks;
+}
+
+var getFile = function(cb){
+  var inputDialog = document.createElement('input');
+  inputDialog.id = 'fileUpload';
+  inputDialog.type = "file";
+  inputDialog.click();
+  inputDialog.onchange = function(data){
+
+    var selectedFile = data.target.files[0];
+    console.log('selected ', selectedFile);
+
+    if(selectedFile){
+      var reader = new FileReader();
+      reader.onloadend = function(theFile){
+        var buffer  = Buffer.from(theFile.target.result);
+        cb(null, buffer);
+      };
+      reader.readAsArrayBuffer(selectedFile);
+    }
+  }
 }

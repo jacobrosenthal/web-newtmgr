@@ -28,24 +28,8 @@
       </div>
     </div>
 
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored" id="connectBtn">
-      connect
-    </button>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored" id="listBtn">
-      list
-    </button>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored" id="testBtn">
-      test
-    </button>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored" id="resetBtn">
-      reset
-    </button>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored" id="confirmBtn">
-      confirm
-    </button>
-
     <br/>
-    <span>Proof of concept <a href="https://github.com/jacobrosenthal/node-newtmgr">node-newtmgr</a> packaged for front end. Requires <a href="https://developers.google.com/web/updates/2017/01/nic56">Chrome 56</a> for bluetooth support, and https. Should even work on android! You must connect before being able to run commands. Enter localStorage.debug = '*' in the console for more debug logging. <a href="https://github.com/jacobrosenthal/web-newtmgr">web-newtmgr source code</a>available on github<span>
+    <span>Proof of concept <a href="https://github.com/jacobrosenthal/node-newtmgr">node-newtmgr</a> packaged for front end. Requires <a href="https://developers.google.com/web/updates/2017/01/nic56">Chrome 56</a> for bluetooth support, and https. Should even work on android! Enter localStorage.debug = '*' in the console for more debug logging. <a href="https://github.com/jacobrosenthal/web-newtmgr">web-newtmgr source code</a> available on github<span>
 
 
     <br/>
@@ -53,6 +37,9 @@
       <input class="mdl-textfield__input" type="text" id="nameInput" value="nimble-bleprph">
       <label class="mdl-textfield__label" for="nameInput">name</label>
     </div>
+    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored" id="connectBtn">
+      connect
+    </button>
 
     <br/>
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
@@ -60,6 +47,22 @@
       <label class="mdl-textfield__label" for="hashInput">hash</label>
     </div>
 
+    <br/>
+    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="listBtn">
+      list
+    </button>
+    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="testBtn">
+      test
+    </button>
+    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="resetBtn">
+      reset
+    </button>
+    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="confirmBtn">
+      confirm
+    </button>
+    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="uploadBtn">
+      upload
+    </button>
 
     <div id="output"></div>
     <script src="main.bundle.js"></script>
