@@ -1,16 +1,11 @@
-var pull = require('pull-stream')
-var through = require('pull-through')
-var toPull = require('stream-to-pull-stream')
-var nmgr = require('newtmgr').nmgr;
-var ble = require('newtmgr').ble;
+var ble = require('newtmgr').transport.ble;
 var utility = require('newtmgr').utility;
-var Sourcer = require('newtmgr').Sourcer;
+var ProgressBar = require('progressbar.js');
 
 var options = {
   services: ['8d53dc1d1db74cd3868b8a527460aa84'],
   characteristics: ['da2e7828fbce4e01ae9e261174997c48'],
   name: "nimble-bleprph",
-  nowait: true //hack for webble, whose statechange isnt good yet
 };
 
 //need to connect onclick for permissions reasons
@@ -21,114 +16,59 @@ var connect = function(event) {
     options.name = nameInput.value;
   }
 
-  ble.connect(options, function(err, characteristic){
-    console.log("subscribed and ready");
-
-    var resetBtn = document.getElementById("resetBtn");
-    resetBtn.addEventListener("click", reset.bind(this, characteristic), false);
-    resetBtn.classList.remove("mdl-button--disabled");
-    var listBtn = document.getElementById("listBtn");
-    listBtn.addEventListener("click", list.bind(this, characteristic), false);
-    listBtn.classList.remove("mdl-button--disabled");
-    var testBtn = document.getElementById("testBtn")
-    testBtn.addEventListener("click", test.bind(this, characteristic), false);
-    testBtn.classList.remove("mdl-button--disabled");
-    var confirmBtn = document.getElementById("confirmBtn")
-    confirmBtn.addEventListener("click", confirm.bind(this, characteristic), false);
-    confirmBtn.classList.remove("mdl-button--disabled");
-    var uploadBtn = document.getElementById("uploadBtn");
-    uploadBtn.addEventListener("click", upload.bind(this, characteristic), false);
-    uploadBtn.classList.remove("mdl-button--disabled");
+  ble.connect(options, function(err, peripheral, characteristic){
+    peripheral.once('disconnect', function(){
+      appendDom('output', "Device disconnected");
+      disable(characteristic)
+    });
+    enable(characteristic);
+    appendDom('output', "Connected");
   });
 }
 
-
 var reset = function(characteristic, event) {
-  var sourcer = Sourcer([nmgr.generateResetBuffer()]);
-
-  pull(
-    sourcer.source(),
-    ble.duplexPull(characteristic),
-    toPull(nmgr.decode()),
-    appendDomPull('output'),
-    pull.drain(sourcer.next.bind(sourcer), function(err){
-      console.log("finished with status:", err);
-    })
-  );
+  ble.reset(characteristic, function(err, obj){
+    appendDom('output', utility.prettyError(obj));
+  });
 }
 
 var list = function(characteristic, event) {
-  var sourcer = Sourcer([nmgr.generateImageListBuffer()]);
-
-  pull(
-    sourcer.source(),
-    ble.duplexPull(characteristic),
-    toPull(nmgr.decode()),
-    toPull(utility.hashToStringTransform()),
-    appendDomPull('output'),
-    pull.drain(sourcer.next.bind(sourcer), function(err){
-      console.log("finished with status:", err);
-    })
-  );
+  ble.image.list(characteristic, function(err, obj){
+    appendDom('output', utility.prettyList(obj));
+  });
 }
 
 var test = function(characteristic, event) {
   var hashInput = document.getElementById('hashInput');
-
-  var cmd = {};
-  cmd.confirm = false;
-  cmd.hash = Buffer.from(hashInput);
-  var sourcer = Sourcer([nmgr.generateImageTestBuffer(cmd)]);
-
-  pull(
-    sourcer.source(),
-    ble.duplexPull(characteristic),
-    toPull(nmgr.decode()),
-    appendDomPull('output'),
-    pull.drain(sourcer.next.bind(sourcer), function(err){
-      console.log("finished with status:", err);
-    })
-  );
+  ble.image.test(characteristic, Buffer.from(hashInput.value), function(err, obj){
+    appendDom('output', utility.prettyError(obj));
+  });
 }
 
 var confirm = function(characteristic, event) {
   var hashInput = document.getElementById('hashInput');
-
-  var cmd = {};
-  cmd.confirm = true;
-  cmd.hash = Buffer.from(hashInput);
-  var sourcer = Sourcer([nmgr.generateImageConfirmBuffer(cmd)]);
-
-  pull(
-    sourcer.source(),
-    ble.duplexPull(characteristic),
-    toPull(nmgr.decode()),
-    appendDomPull('output'),
-    pull.drain(sourcer.next.bind(sourcer), function(err){
-      console.log("finished with status:", err);
-    })
-  );
+  ble.image.confirm(characteristic, Buffer.from(hashInput.value), function(err, obj){
+    appendDom('output', utility.prettyError(obj));
+  });
 }
 
 var upload = function(characteristic, event) {
+  var bar = new ProgressBar.Line('#progress', {easing: 'easeInOut'});
 
-  var firmwareUpload = function(err, data){
-    //has to be 32 or larger or imgmgr returns rc: 3, ive seen 450+ work, newt tool uses 87
-    var maxFrag = 87;
-    var chunks = split(data, maxFrag);
-    var sourcer = Sourcer(chunks);
+  var firmwareUpload = function(err, fileBuffer){
+    var onStatus = function(obj){
+      bar.animate(obj.off/fileBuffer.length);
+    }
 
-    pull(
-      sourcer.source(),
-      toPull(nmgr.imageUploadTransform(data.length)),
-      ble.duplexPull(characteristic),
-      toPull(nmgr.decode()),
-      appendDomPull('output'),
-      pull.drain(sourcer.next.bind(sourcer), function(err){
-        console.log("finished with status:", err);
-      })
-    );
+    var status;
+    status = ble.image.upload(characteristic, fileBuffer, function(err, obj){
+      appendDom('output', utility.prettyError(obj));
+      status.removeListener('status', onStatus);
+      bar.animate(0);
+    });
+    status.on('status', onStatus);
   }
+
 
   getFile(firmwareUpload);
 }
@@ -136,29 +76,11 @@ var upload = function(characteristic, event) {
 document.getElementById("connectBtn").addEventListener("click", connect.bind(this), false);
 
 
-var appendDomPull = function(elementName){
+var appendDom = function(elementName, data){
   var output = document.getElementById(elementName);
-  return through(function (data) {
-    var charDiv = document.createElement("div");
-    charDiv.innerHTML = JSON.stringify(data);
-    output.appendChild(charDiv);
-    this.queue(data)
-  }, function (end) {
-    this.queue(null)
-  })
-}
-
-var split = function(buffer, size){
-  if (buffer.length < size)
-    return [buffer];
-
-  var chunks = [];
-  var idx = 0;
-  while(idx<buffer.length){
-    chunks.push(buffer.slice(idx,idx+size))
-    idx = idx+size;
-  }
-  return chunks;
+  var charDiv = document.createElement("div");
+  charDiv.innerHTML = JSON.stringify(data);
+  output.appendChild(charDiv);
 }
 
 var getFile = function(cb){
@@ -169,15 +91,66 @@ var getFile = function(cb){
   inputDialog.onchange = function(data){
 
     var selectedFile = data.target.files[0];
-    console.log('selected ', selectedFile);
 
     if(selectedFile){
       var reader = new FileReader();
       reader.onloadend = function(theFile){
         var buffer  = Buffer.from(theFile.target.result);
+
+        appendDom('output', 'uploading ' + selectedFile.name + " " + buffer.length + " bytes");
+
         cb(null, buffer);
       };
       reader.readAsArrayBuffer(selectedFile);
     }
   }
+}
+
+var enable = function(characteristic){
+  //reconnecting doesnt seem to work so disable on connect, and dont reenable on disconnect
+  var connectBtn = document.getElementById("connectBtn");
+  connectBtn.removeEventListener("click", connect.bind(this), false);
+  connectBtn.disabled = true;
+
+  var resetBtn = document.getElementById("resetBtn");
+  resetBtn.addEventListener("click", reset.bind(null, characteristic), false);
+  resetBtn.disabled = false;
+
+  var listBtn = document.getElementById("listBtn");
+  listBtn.addEventListener("click", list.bind(null, characteristic), false);
+  listBtn.disabled = false;
+
+  var testBtn = document.getElementById("testBtn");
+  testBtn.addEventListener("click", test.bind(null, characteristic), false);
+  testBtn.disabled = false;
+
+  var confirmBtn = document.getElementById("confirmBtn")
+  confirmBtn.addEventListener("click", confirm.bind(null, characteristic), false);
+  confirmBtn.disabled = false;
+
+  var uploadBtn = document.getElementById("uploadBtn");
+  uploadBtn.addEventListener("click", upload.bind(null, characteristic), false);
+  uploadBtn.disabled = false;
+}
+
+var disable = function(characteristic){
+  var resetBtn = document.getElementById("resetBtn");
+  resetBtn.removeEventListener("click", reset.bind(null, characteristic), false);
+  resetBtn.disabled = true;
+
+  var listBtn = document.getElementById("listBtn");
+  listBtn.removeEventListener("click", list.bind(null, characteristic), false);
+  listBtn.disabled = true;
+
+  var testBtn = document.getElementById("testBtn");
+  testBtn.removeEventListener("click", test.bind(null, characteristic), false);
+  testBtn.disabled = true;
+
+  var confirmBtn = document.getElementById("confirmBtn")
+  confirmBtn.removeEventListener("click", confirm.bind(null, characteristic), false);
+  confirmBtn.disabled = true;
+
+  var uploadBtn = document.getElementById("uploadBtn");
+  uploadBtn.removeEventListener("click", upload.bind(null, characteristic), false);
+  uploadBtn.disabled = true;
 }

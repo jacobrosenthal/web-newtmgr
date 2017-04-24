@@ -16,6 +16,16 @@
 
     <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 
+    <style>
+        .progress {
+            height: 10px;
+        }
+        .progress > svg {
+            height: 100%;
+            display: block;
+        }
+    </style>
+
     <!-- <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.indigo-light_blue.min.css" /> -->
   </head>
 
@@ -37,7 +47,7 @@
       <input class="mdl-textfield__input" type="text" id="nameInput" value="nimble-bleprph">
       <label class="mdl-textfield__label" for="nameInput">name</label>
     </div>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored" id="connectBtn">
+    <button class="mybutton mdl-button mdl-js-button mdl-button--colored" id="connectBtn">
       connect
     </button>
 
@@ -48,22 +58,24 @@
     </div>
 
     <br/>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="listBtn">
+    <div class="progress" id="progress"></div>
+
+    <br/>
+    <button class="mybutton mdl-button mdl-js-button mdl-button--colored" disabled id="listBtn">
       list
     </button>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="testBtn">
+    <button class="mybutton mdl-button mdl-js-button mdl-button--colored" disabled id="testBtn">
       test
     </button>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="resetBtn">
+    <button class="mybutton mdl-button mdl-js-button mdl-button--colored" disabled id="resetBtn">
       reset
     </button>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="confirmBtn">
+    <button class="mybutton mdl-button mdl-js-button mdl-button--colored" disabled id="confirmBtn">
       confirm
     </button>
-    <button class="mybutton mdl-button mdl-button--raised mdl-button--colored mdl-button--disabled" id="uploadBtn">
+    <button class="mybutton mdl-button mdl-js-button mdl-button--colored" disabled id="uploadBtn">
       upload
     </button>
-
     <div id="output"></div>
     <script src="main.bundle.js"></script>
   </body>
