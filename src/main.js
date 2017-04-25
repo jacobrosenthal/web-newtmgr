@@ -38,6 +38,12 @@ var reset = function(characteristic, event) {
   });
 }
 
+var logShow = function(characteristic, event) {
+  ble.log.show(characteristic, function(err, obj){
+    appendDom('output', JSON.stringify(utility.prettyError(obj)));
+  });
+}
+
 var list = function(characteristic, event) {
   ble.image.list(characteristic, function(err, obj){
     appendDom('output', utility.prettyList(obj));
@@ -118,6 +124,10 @@ var enable = function(characteristic){
   connectBtn.removeEventListener("click", connect.bind(this), false);
   connectBtn.disabled = true;
 
+  var logShowBtn = document.getElementById("logShowBtn");
+  logShowBtn.addEventListener("click", logShow.bind(null, characteristic), false);
+  logShowBtn.disabled = false;
+
   var resetBtn = document.getElementById("resetBtn");
   resetBtn.addEventListener("click", reset.bind(null, characteristic), false);
   resetBtn.disabled = false;
@@ -140,6 +150,10 @@ var enable = function(characteristic){
 }
 
 var disable = function(characteristic){
+  var logShowBtn = document.getElementById("logShowBtn");
+  logShowBtn.removeEventListener("click", logShow.bind(null, characteristic), false);
+  logShowBtn.disabled = true;
+
   var resetBtn = document.getElementById("resetBtn");
   resetBtn.removeEventListener("click", reset.bind(null, characteristic), false);
   resetBtn.disabled = true;
