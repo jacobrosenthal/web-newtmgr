@@ -1,6 +1,7 @@
 var ble = require('newtmgr').transport.ble;
 var utility = require('newtmgr').utility;
 var ProgressBar = require('progressbar.js');
+var noble = require('noble/with-bindings')(require('noble/lib/webbluetooth/bindings'));
 
 var options = {
   services: ['8d53dc1d1db74cd3868b8a527460aa84'],
@@ -16,14 +17,19 @@ var connect = function(event) {
     options.name = nameInput.value;
   }
 
-  ble.connect(options, function(err, peripheral, characteristic){
-    peripheral.once('disconnect', function(){
-      appendDom('output', "Device disconnected");
-      disable(characteristic)
-    });
-    enable(characteristic);
-    appendDom('output', "Connected");
-  });
+  var onStateChange = function (state) {
+    if (state === 'poweredOn') {
+      ble.scanAndConnect(noble, options, function(err, peripheral, characteristic){
+        peripheral.once('disconnect', function(){
+          appendDom('output', "Device disconnected");
+          disable(characteristic)
+        });
+        enable(characteristic);
+        appendDom('output', "Connected");
+      });
+    }
+  };
+  noble.once('stateChange', onStateChange);
 }
 
 var reset = function(characteristic, event) {

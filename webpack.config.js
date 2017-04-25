@@ -10,11 +10,6 @@ module.exports = {
     filename: '[name].bundle.js',
     path: path.join(__dirname, './')
   },
-  resolve: {
-    alias: {
-      noble$: path.join(__dirname, './noble.js'),
-    }
-  },
   module: {
     loaders: [
       {
