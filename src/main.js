@@ -52,14 +52,19 @@ var list = function(characteristic, event) {
 
 var test = function(characteristic, event) {
   var hashInput = document.getElementById('hashInput');
-  ble.image.test(characteristic, Buffer.from(hashInput.value), function(err, obj){
+
+  var testHashBuffer = Buffer.from(hashInput.value, "hex")
+
+  ble.image.test(characteristic, testHashBuffer, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
 }
 
 var confirm = function(characteristic, event) {
   var hashInput = document.getElementById('hashInput');
-  ble.image.confirm(characteristic, Buffer.from(hashInput.value), function(err, obj){
+  var testHashBuffer = Buffer.from(hashInput.value, "hex")
+
+  ble.image.confirm(characteristic, testHashBuffer, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
 }
