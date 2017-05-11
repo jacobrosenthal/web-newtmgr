@@ -9,30 +9,57 @@ var options = {
   name: "nimble-bleprph",
 };
 
-//need to connect onclick for permissions reasons
-var connect = function(event) {
+var connect = function(peripheral, cb){
+  ble.connect(peripheral, options, function(err, characteristic){
+    if (err) return cb(err);
+
+    peripheral.once('disconnect', function(){
+      appendDom('output', "Device disconnected");
+      disable(peripheral, characteristic);
+    });
+
+    enable(peripheral, characteristic);
+    cb(err, peripheral, characteristic);
+  });
+}
+
+//need to scan onclick for permissions reasons
+var scan = function(event) {
+
   var nameInput = document.getElementById('nameInput');
 
   if(nameInput.value){
     options.name = nameInput.value;
   }
 
-  var onStateChange = function (state) {
-    if (state === 'poweredOn') {
-      ble.scanAndConnect(noble, options, function(err, peripheral, characteristic){
-        peripheral.once('disconnect', function(){
-          appendDom('output', "Device disconnected");
-          disable(characteristic)
-        });
-        enable(characteristic);
-        appendDom('output', "Connected");
-      });
+  //should probably check and check noble.state. but meh
+  ble.scan(noble, options, function(err, peripheral){
+    if (err){
+      appendDom('output', "err scanning: " + err);
+      return;
     }
-  };
-  noble.once('stateChange', onStateChange);
+
+    connect(peripheral, function(err, peripheral, characteristic){
+      if (err){
+        appendDom('output', "err connecting: " + err);
+        return;
+      }
+      appendDom('output', "Connected");
+    });
+  });
 }
 
-var reset = function(characteristic, event) {
+var reset = function(peripheral, characteristic, event) {
+  peripheral.once('disconnect', function(){
+    connect(peripheral, function(err, peripheral, characteristic){
+      if (err){
+        appendDom('output', "err connecting: " + err);
+        return;
+      }
+      appendDom('output', "Connected");
+    });
+  });
+
   ble.reset(characteristic, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
@@ -52,9 +79,7 @@ var list = function(characteristic, event) {
 
 var test = function(characteristic, event) {
   var hashInput = document.getElementById('hashInput');
-
-  var testHashBuffer = Buffer.from(hashInput.value, "hex")
-
+  var testHashBuffer = Buffer.from(hashInput.value, "hex");
   ble.image.test(characteristic, testHashBuffer, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
@@ -62,8 +87,7 @@ var test = function(characteristic, event) {
 
 var confirm = function(characteristic, event) {
   var hashInput = document.getElementById('hashInput');
-  var testHashBuffer = Buffer.from(hashInput.value, "hex")
-
+  var testHashBuffer = Buffer.from(hashInput.value, "hex");
   ble.image.confirm(characteristic, testHashBuffer, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
@@ -86,12 +110,10 @@ var upload = function(characteristic, event) {
     status.on('status', onStatus);
   }
 
-
   getFile(firmwareUpload);
 }
 
-document.getElementById("connectBtn").addEventListener("click", connect.bind(this), false);
-
+document.getElementById("scanBtn").addEventListener("click", scan.bind(this), false);
 
 var appendDom = function(elementName, data){
   var output = document.getElementById(elementName);
@@ -123,18 +145,17 @@ var getFile = function(cb){
   }
 }
 
-var enable = function(characteristic){
-  //reconnecting doesnt seem to work so disable on connect, and dont reenable on disconnect
-  var connectBtn = document.getElementById("connectBtn");
-  connectBtn.removeEventListener("click", connect.bind(this), false);
-  connectBtn.disabled = true;
+var enable = function(peripheral, characteristic){
+  var scanBtn = document.getElementById("scanBtn");
+  scanBtn.removeEventListener("click", scan.bind(null), false);
+  scanBtn.disabled = true;
 
   var logShowBtn = document.getElementById("logShowBtn");
   logShowBtn.addEventListener("click", logShow.bind(null, characteristic), false);
   logShowBtn.disabled = false;
 
   var resetBtn = document.getElementById("resetBtn");
-  resetBtn.addEventListener("click", reset.bind(null, characteristic), false);
+  resetBtn.addEventListener("click", reset.bind(null, peripheral, characteristic), false);
   resetBtn.disabled = false;
 
   var listBtn = document.getElementById("listBtn");
@@ -154,13 +175,17 @@ var enable = function(characteristic){
   uploadBtn.disabled = false;
 }
 
-var disable = function(characteristic){
+var disable = function(peripheral, characteristic){
+  var scanBtn = document.getElementById("scanBtn");
+  scanBtn.addEventListener("click", scan.bind(null, characteristic), false);
+  scanBtn.disabled = false;
+
   var logShowBtn = document.getElementById("logShowBtn");
   logShowBtn.removeEventListener("click", logShow.bind(null, characteristic), false);
   logShowBtn.disabled = true;
 
   var resetBtn = document.getElementById("resetBtn");
-  resetBtn.removeEventListener("click", reset.bind(null, characteristic), false);
+  resetBtn.removeEventListener("click", reset.bind(null, peripheral, characteristic), false);
   resetBtn.disabled = true;
 
   var listBtn = document.getElementById("listBtn");
