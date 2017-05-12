@@ -73,6 +73,24 @@ var reset = function(peripheral, characteristic, event) {
   });
 }
 
+var stat = function(characteristic, event) {
+  ble.stat(characteristic, function(err, obj){
+    appendDom('output', utility.prettyError(obj));
+  });
+}
+
+var taskstats = function(characteristic, event) {
+  ble.taskstats(characteristic, function(err, obj){
+    appendDom('output', utility.prettyError(obj));
+  });
+}
+
+var mpstats = function(characteristic, event) {
+  ble.mpstats(characteristic, function(err, obj){
+    appendDom('output', utility.prettyError(obj));
+  });
+}
+
 var logShow = function(characteristic, event) {
   ble.log.show(characteristic, function(err, obj){
     appendDom('output', JSON.stringify(utility.prettyError(obj)));
@@ -166,6 +184,18 @@ var enable = function(peripheral, characteristic){
   resetBtn.addEventListener("click", reset.bind(null, peripheral, characteristic), false);
   resetBtn.disabled = false;
 
+  var statBtn = document.getElementById("statBtn");
+  statBtn.addEventListener("click", stat.bind(null, characteristic), false);
+  statBtn.disabled = false;
+
+  var taskstatsBtn = document.getElementById("taskstatsBtn");
+  taskstatsBtn.addEventListener("click", taskstats.bind(null, characteristic), false);
+  taskstatsBtn.disabled = false;
+
+  var mpstatsBtn = document.getElementById("mpstatsBtn");
+  mpstatsBtn.addEventListener("click", mpstats.bind(null, characteristic), false);
+  mpstatsBtn.disabled = false;
+
   var listBtn = document.getElementById("listBtn");
   listBtn.addEventListener("click", list.bind(null, characteristic), false);
   listBtn.disabled = false;
@@ -195,6 +225,18 @@ var disable = function(peripheral, characteristic){
   var resetBtn = document.getElementById("resetBtn");
   resetBtn.removeEventListener("click", reset.bind(null, peripheral, characteristic), false);
   resetBtn.disabled = true;
+
+  var statBtn = document.getElementById("statBtn");
+  statBtn.removeEventListener("click", stat.bind(null, characteristic), false);
+  statBtn.disabled = true;
+
+  var taskstatsBtn = document.getElementById("taskstatsBtn");
+  taskstatsBtn.removeEventListener("click", taskstats.bind(null, characteristic), false);
+  taskstatsBtn.disabled = true;
+
+  var mpstatsBtn = document.getElementById("mpstatsBtn");
+  mpstatsBtn.removeEventListener("click", mpstats.bind(null, characteristic), false);
+  mpstatsBtn.disabled = true;
 
   var listBtn = document.getElementById("listBtn");
   listBtn.removeEventListener("click", list.bind(null, characteristic), false);
