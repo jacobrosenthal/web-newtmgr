@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "deploy": "npm run build && surge",
     "build": "webpack",
     "start": "ecstatic --port 3000"
   },
