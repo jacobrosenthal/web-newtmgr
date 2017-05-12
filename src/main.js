@@ -9,6 +9,14 @@ var options = {
   name: "nimble-bleprph",
 };
 
+noble.on('error', function(err){
+  appendDom('output', err.toString());
+});
+
+noble._bindings.on('error', function(err){
+  appendDom('output', err.toString());
+});
+
 var connect = function(peripheral, cb){
   ble.connect(peripheral, options, function(err, characteristic){
     if (err) return cb(err);
