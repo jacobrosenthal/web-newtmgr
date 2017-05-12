@@ -120,7 +120,7 @@ var test = function(event) {
 var confirm = function(event) {
   var hashInput = document.getElementById('hashInput');
   var testHashBuffer = Buffer.from(hashInput.value, "hex");
-  ble.image.confirm(characteristic, testHashBuffer, function(err, obj){
+  ble.image.confirm(g_characteristic, testHashBuffer, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
 }
