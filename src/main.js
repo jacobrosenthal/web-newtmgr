@@ -82,9 +82,17 @@ var reset = function(event) {
 }
 
 var stat = function(event) {
-  ble.stat(g_characteristic, function(err, obj){
-    appendDom('output', utility.prettyError(obj));
-  });
+  var input = document.getElementById('input');
+  if(input.value){
+    ble.stat(g_characteristic, input.value, function(err, obj){
+      appendDom('output', utility.prettyError(obj));
+      input.value = "";
+    });
+  }else{
+    ble.stat(g_characteristic, function(err, obj){
+      appendDom('output', utility.prettyError(obj));
+    });
+  }
 }
 
 var taskstats = function(event) {
@@ -101,9 +109,17 @@ var mpstats = function(event) {
 }
 
 var logShow = function(event) {
-  ble.log.show(g_characteristic, function(err, obj){
-    appendDom('output', JSON.stringify(utility.prettyError(obj)));
-  });
+  var input = document.getElementById('input');
+  if(input.value){
+    ble.log.show(g_characteristic, input.value, function(err, obj){
+      appendDom('output', JSON.stringify(utility.prettyError(obj)));
+      input.value = "";
+    });
+  }else{
+    ble.log.show(g_characteristic, function(err, obj){
+      appendDom('output', JSON.stringify(utility.prettyError(obj)));
+    });
+  }
 }
 
 var list = function(event) {
@@ -114,18 +130,20 @@ var list = function(event) {
 }
 
 var test = function(event) {
-  var hashInput = document.getElementById('hashInput');
-  var testHashBuffer = Buffer.from(hashInput.value, "hex");
+  var input = document.getElementById('input');
+  var testHashBuffer = Buffer.from(input.value, "hex");
   ble.image.test(g_characteristic, testHashBuffer, function(err, obj){
     appendDom('output', utility.prettyError(obj));
+    input.value = "";
   });
 }
 
 var confirm = function(event) {
-  var hashInput = document.getElementById('hashInput');
-  var testHashBuffer = Buffer.from(hashInput.value, "hex");
+  var input = document.getElementById('input');
+  var testHashBuffer = Buffer.from(input.value, "hex");
   ble.image.confirm(g_characteristic, testHashBuffer, function(err, obj){
     appendDom('output', utility.prettyError(obj));
+    input.value = "";
   });
 }
 
