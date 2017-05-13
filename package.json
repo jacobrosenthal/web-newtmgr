@@ -10,7 +10,10 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "chart.js": "^2.5.0",
+    "chartjs-plugin-stacked100": "^0.1.1"
+  },
   "devDependencies": {
     "bufferutil": "^1.2.1",
     "ecstatic": "^2.1.0",

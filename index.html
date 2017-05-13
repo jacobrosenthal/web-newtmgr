@@ -53,12 +53,9 @@
 
     <br/>
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-      <input class="mdl-textfield__input" type="text" id="hashInput" value="13c1383f1f020d496b29e2660319c6ca0fd97b5a6e24342fb69b5fb5917ab61a">
+      <input class="mdl-textfield__input" type="text" id="hashInput" >
       <label class="mdl-textfield__label" for="hashInput">hash</label>
     </div>
-
-    <br/>
-    <div class="progress" id="progress"></div>
 
     <br/>
     <button class="mybutton mdl-button mdl-js-button mdl-button--colored" disabled id="statBtn">
@@ -88,6 +85,11 @@
     <button class="mybutton mdl-button mdl-js-button mdl-button--colored" disabled id="uploadBtn">
       upload
     </button>
+    <br/>
+    <div class="progress" id="progress"></div>
+    <div id="canvas-holder" style="width:40%">
+        <canvas id="chart-area" />
+    </div>
     <div id="output"></div>
     <script src="main.bundle.js"></script>
   </body>

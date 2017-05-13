@@ -2,6 +2,8 @@ var ble = require('newtmgr').transport.ble;
 var utility = require('newtmgr').utility;
 var ProgressBar = require('progressbar.js');
 var noble = require('noble/with-bindings')(require('noble/lib/webbluetooth/bindings'));
+var Chart = require('chart.js')
+var stacked100 = require('chartjs-plugin-stacked100');
 
 var options = {
   services: ['8d53dc1d1db74cd3868b8a527460aa84'],
@@ -32,6 +34,7 @@ var connect = function(peripheral, cb){
     });
 
     enable();
+    taskstats();
     cb(err);
   });
 }
@@ -86,6 +89,7 @@ var stat = function(event) {
 
 var taskstats = function(event) {
   ble.taskstats(g_characteristic, function(err, obj){
+    taskGraph(obj);
     appendDom('output', utility.prettyError(obj));
   });
 }
@@ -199,6 +203,60 @@ var disable = function(){
   document.getElementById("testBtn").disabled = true;
   document.getElementById("confirmBtn").disabled = true;
   document.getElementById("uploadBtn").disabled = true;
+}
+
+var taskGraph = function(data){
+  var labels = [];
+  var usedData = [];
+  var freeData = [];
+  for (var prop in data.tasks) {
+    labels.push(prop);
+    usedData.push(data.tasks[prop].stkuse);
+    freeData.push(data.tasks[prop].stksiz-data.tasks[prop].stkuse);
+  }
+
+  new Chart(document.getElementById('chart-area'), {
+    type: 'horizontalBar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: "used", data: usedData, backgroundColor: "rgba(48,63,159, 1.0)" },
+        { label: "free",   data: freeData,  backgroundColor: "rgba(64,196,255, 1.0)" }
+      ]
+    },
+    options: {
+      scales: {
+        xAxes: [{
+          ticks: {
+            display: false
+          },
+          gridLines: {
+            display: false
+          },
+          scaleLabel: {
+            display: false
+          }
+        }],
+        yAxes: [{
+          //  ticks: {
+          //   display: false
+          // },
+          // gridLines: {
+          //   display: false
+          // },
+          // scaleLabel: {
+          //   display: false
+          // }
+        }]
+      },
+      legend: {
+          display: false
+      },
+      plugins: {
+        stacked100: { enable: true }
+      }
+    }
+  });
 }
 
 document.getElementById("scanBtn").addEventListener("click", scan, false);
