@@ -34,7 +34,6 @@ var connect = function(peripheral, cb){
     });
 
     enable();
-    taskstats();
     cb(err);
   });
 }
