@@ -174,10 +174,7 @@ var appendDom = function(elementName, data){
 }
 
 var getFile = function(cb){
-  var inputDialog = document.createElement('input');
-  inputDialog.id = 'fileUpload';
-  inputDialog.type = "file";
-  inputDialog.click();
+  var inputDialog = document.getElementById("fileUpload")
   inputDialog.onchange = function(data){
 
     var selectedFile = data.target.files[0];
@@ -194,6 +191,7 @@ var getFile = function(cb){
       reader.readAsArrayBuffer(selectedFile);
     }
   }
+  inputDialog.click();
 }
 
 var enable = function(){
