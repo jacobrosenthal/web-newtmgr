@@ -166,6 +166,12 @@ var upload = function(event) {
   getFile(firmwareUpload);
 }
 
+var erase = function(event) {
+  ble.image.erase(g_characteristic, function(err, obj){
+    appendDom('output', utility.prettyError(obj));
+  });
+}
+
 var appendDom = function(elementName, data){
   var output = document.getElementById(elementName);
   var charDiv = document.createElement("div");
@@ -205,6 +211,7 @@ var enable = function(){
   document.getElementById("testBtn").disabled = false;
   document.getElementById("confirmBtn").disabled = false;
   document.getElementById("uploadBtn").disabled = false;
+  document.getElementById("eraseBtn").disabled = false;
 }
 
 var disable = function(){
@@ -218,6 +225,7 @@ var disable = function(){
   document.getElementById("testBtn").disabled = true;
   document.getElementById("confirmBtn").disabled = true;
   document.getElementById("uploadBtn").disabled = true;
+  document.getElementById("eraseBtn").disabled = true;
 }
 
 var taskGraph = function(data){
@@ -277,6 +285,7 @@ var taskGraph = function(data){
 document.getElementById("scanBtn").addEventListener("click", scan, false);
 document.getElementById("logShowBtn").addEventListener("click", logShow, false);
 document.getElementById("resetBtn").addEventListener("click", reset, false);
+document.getElementById("eraseBtn").addEventListener("click", erase, false);
 document.getElementById("statBtn").addEventListener("click", stat, false);
 document.getElementById("taskstatsBtn").addEventListener("click", taskstats, false);
 document.getElementById("mpstatsBtn").addEventListener("click", mpstats, false);
