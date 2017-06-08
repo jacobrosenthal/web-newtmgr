@@ -6,7 +6,8 @@
   "scripts": {
     "deploy": "npm run build && surge",
     "build": "webpack",
-    "start": "ecstatic --port 3000"
+    "start": "ecstatic --port 3000",
+    "test": "jshint src"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +18,7 @@
   "devDependencies": {
     "bufferutil": "^1.2.1",
     "ecstatic": "^2.1.0",
+    "jshint": "^2.9.4",
     "json-loader": "^0.5.4",
     "newtmgr": "^0.6.2",
     "noble": "sandeepmistry/noble#streams",
