@@ -2,7 +2,7 @@ var ble = require('newtmgr').transport.ble;
 var utility = require('newtmgr').utility;
 var ProgressBar = require('progressbar.js');
 var noble = require('noble/with-bindings')(require('noble/lib/webbluetooth/bindings'));
-var Chart = require('chart.js')
+var Chart = require('chart.js');
 var stacked100 = require('chartjs-plugin-stacked100');
 
 var options = {
@@ -36,7 +36,7 @@ var connect = function(peripheral, cb){
     enable();
     cb(err);
   });
-}
+};
 
 //need to scan onclick for permissions reasons
 var scan = function(event) {
@@ -62,7 +62,7 @@ var scan = function(event) {
       appendDom('output', "Connected");
     });
   });
-}
+};
 
 var reset = function(event) {
   g_peripheral.once('disconnect', function(){
@@ -78,7 +78,7 @@ var reset = function(event) {
   ble.reset(g_characteristic, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
-}
+};
 
 var stat = function(event) {
   var input = document.getElementById('input');
@@ -92,20 +92,20 @@ var stat = function(event) {
       appendDom('output', utility.prettyError(obj));
     });
   }
-}
+};
 
 var taskstats = function(event) {
   ble.taskstats(g_characteristic, function(err, obj){
     taskGraph(obj);
     appendDom('output', utility.prettyError(obj));
   });
-}
+};
 
 var mpstats = function(event) {
   ble.mpstats(g_characteristic, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
-}
+};
 
 var logShow = function(event) {
   var input = document.getElementById('input');
@@ -119,14 +119,14 @@ var logShow = function(event) {
       appendDom('output', JSON.stringify(utility.prettyError(obj)));
     });
   }
-}
+};
 
 var list = function(event) {
   console.log("list");
   ble.image.list(g_characteristic, function(err, obj){
     appendDom('output', utility.prettyList(obj));
   });
-}
+};
 
 var test = function(event) {
   var input = document.getElementById('input');
@@ -135,7 +135,7 @@ var test = function(event) {
     appendDom('output', utility.prettyError(obj));
     input.value = "";
   });
-}
+};
 
 var confirm = function(event) {
   var input = document.getElementById('input');
@@ -144,7 +144,7 @@ var confirm = function(event) {
     appendDom('output', utility.prettyError(obj));
     input.value = "";
   });
-}
+};
 
 var upload = function(event) {
   var bar = new ProgressBar.Line('#progress', {easing: 'easeInOut'});
@@ -152,7 +152,7 @@ var upload = function(event) {
   var firmwareUpload = function(err, fileBuffer){
     var onStatus = function(obj){
       bar.animate(obj.off/fileBuffer.length);
-    }
+    };
 
     var status;
     status = ble.image.upload(g_characteristic, fileBuffer, function(err, obj){
@@ -161,26 +161,26 @@ var upload = function(event) {
       bar.animate(0);
     });
     status.on('status', onStatus);
-  }
+  };
 
   getFile(firmwareUpload);
-}
+};
 
 var erase = function(event) {
   ble.image.erase(g_characteristic, function(err, obj){
     appendDom('output', utility.prettyError(obj));
   });
-}
+};
 
 var appendDom = function(elementName, data){
   var output = document.getElementById(elementName);
   var charDiv = document.createElement("div");
   charDiv.innerHTML = JSON.stringify(data);
   output.appendChild(charDiv);
-}
+};
 
 var getFile = function(cb){
-  var inputDialog = document.getElementById("fileUpload")
+  var inputDialog = document.getElementById("fileUpload");
   inputDialog.onchange = function(data){
 
     var selectedFile = data.target.files[0];
@@ -196,9 +196,9 @@ var getFile = function(cb){
       };
       reader.readAsArrayBuffer(selectedFile);
     }
-  }
+  };
   inputDialog.click();
-}
+};
 
 var enable = function(){
   document.getElementById("scanBtn").disabled = true;
@@ -212,7 +212,7 @@ var enable = function(){
   document.getElementById("confirmBtn").disabled = false;
   document.getElementById("uploadBtn").disabled = false;
   document.getElementById("eraseBtn").disabled = false;
-}
+};
 
 var disable = function(){
   document.getElementById("scanBtn").disabled = false;
@@ -226,7 +226,7 @@ var disable = function(){
   document.getElementById("confirmBtn").disabled = true;
   document.getElementById("uploadBtn").disabled = true;
   document.getElementById("eraseBtn").disabled = true;
-}
+};
 
 var taskGraph = function(data){
   var labels = [];
@@ -280,7 +280,7 @@ var taskGraph = function(data){
       }
     }
   });
-}
+};
 
 document.getElementById("scanBtn").addEventListener("click", scan, false);
 document.getElementById("logShowBtn").addEventListener("click", logShow, false);
