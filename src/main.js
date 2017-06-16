@@ -11,16 +11,27 @@ var options = {
   name: "nimble-bleprph",
 };
 
+var g_peripheral;
+var g_characteristic;
+
+var finish = function(err, obj){
+  if(err){
+    appendDom('output', err.message);
+  }else{
+    utility.prettyList(obj);
+    utility.prettyError(obj);
+    appendDom('output', JSON.stringify(obj));
+  }
+  input.value = "";
+};
+
 noble.on('error', function(err){
-  appendDom('output', err.toString());
+  finish(err);
 });
 
 noble._bindings.on('error', function(err){
-  appendDom('output', err.toString());
+  finish(err);
 });
-
-var g_peripheral;
-var g_characteristic;
 
 var connect = function(peripheral, cb){
   ble.connect(peripheral, options, function(err, characteristic){
@@ -75,75 +86,53 @@ var reset = function(event) {
     });
   });
 
-  ble.reset(g_characteristic, function(err, obj){
-    appendDom('output', utility.prettyError(obj));
-  });
+  ble.reset(g_characteristic, 5000, finish);
 };
 
 var stat = function(event) {
   var input = document.getElementById('input');
   if(input.value){
-    ble.stat(g_characteristic, input.value, function(err, obj){
-      appendDom('output', utility.prettyError(obj));
-      input.value = "";
-    });
+    ble.stat(g_characteristic, input.value, 5000, finish);
   }else{
-    ble.stat(g_characteristic, function(err, obj){
-      appendDom('output', utility.prettyError(obj));
-    });
+    ble.stat(g_characteristic, 5000, finish);
   }
 };
 
 var taskstats = function(event) {
-  ble.taskstats(g_characteristic, function(err, obj){
+  ble.taskstats(g_characteristic, 5000, function(err, obj){
     taskGraph(obj);
-    appendDom('output', utility.prettyError(obj));
+    finish(err, obj);
   });
 };
 
 var mpstats = function(event) {
-  ble.mpstats(g_characteristic, function(err, obj){
-    appendDom('output', utility.prettyError(obj));
-  });
+  ble.mpstats(g_characteristic, 5000, finish);
 };
 
 var logShow = function(event) {
   var input = document.getElementById('input');
   if(input.value){
-    ble.log.show(g_characteristic, input.value, function(err, obj){
-      appendDom('output', JSON.stringify(utility.prettyError(obj)));
-      input.value = "";
-    });
+    ble.log.show(g_characteristic, input.value, 5000, finish);
   }else{
-    ble.log.show(g_characteristic, function(err, obj){
-      appendDom('output', JSON.stringify(utility.prettyError(obj)));
-    });
+    ble.log.show(g_characteristic, 5000, finish);
   }
 };
 
 var list = function(event) {
   console.log("list");
-  ble.image.list(g_characteristic, function(err, obj){
-    appendDom('output', utility.prettyList(obj));
-  });
+  ble.image.list(g_characteristic, 5000, finish);
 };
 
 var test = function(event) {
   var input = document.getElementById('input');
   var testHashBuffer = Buffer.from(input.value, "hex");
-  ble.image.test(g_characteristic, testHashBuffer, function(err, obj){
-    appendDom('output', utility.prettyError(obj));
-    input.value = "";
-  });
+  ble.image.test(g_characteristic, testHashBuffer, 5000, finish);
 };
 
 var confirm = function(event) {
   var input = document.getElementById('input');
   var testHashBuffer = Buffer.from(input.value, "hex");
-  ble.image.confirm(g_characteristic, testHashBuffer, function(err, obj){
-    appendDom('output', utility.prettyError(obj));
-    input.value = "";
-  });
+  ble.image.confirm(g_characteristic, testHashBuffer, 5000, finish);
 };
 
 var upload = function(event) {
@@ -155,10 +144,10 @@ var upload = function(event) {
     };
 
     var status;
-    status = ble.image.upload(g_characteristic, fileBuffer, function(err, obj){
-      appendDom('output', utility.prettyError(obj));
+    status = ble.image.upload(g_characteristic, fileBuffer, 5000, function(err, obj){
       status.removeListener('status', onStatus);
       bar.animate(0);
+      finish(err, obj);
     });
     status.on('status', onStatus);
   };
@@ -167,15 +156,13 @@ var upload = function(event) {
 };
 
 var erase = function(event) {
-  ble.image.erase(g_characteristic, function(err, obj){
-    appendDom('output', utility.prettyError(obj));
-  });
+  ble.image.erase(g_characteristic, 5000, finish);
 };
 
-var appendDom = function(elementName, data){
+var appendDom = function(elementName, string){
   var output = document.getElementById(elementName);
   var charDiv = document.createElement("div");
-  charDiv.innerHTML = JSON.stringify(data);
+  charDiv.innerHTML = string;
   output.appendChild(charDiv);
 };
 

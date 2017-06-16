@@ -20,7 +20,7 @@
     "ecstatic": "^2.1.0",
     "jshint": "^2.9.4",
     "json-loader": "^0.5.4",
-    "newtmgr": "^0.6.2",
+    "newtmgr": "^0.7.0",
     "noble": "sandeepmistry/noble#streams",
     "progressbar.js": "^1.0.1",
     "utf-8-validate": "^1.2.1",
