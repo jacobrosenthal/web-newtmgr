@@ -89,13 +89,18 @@
       erase
     </button>
     <input id="fileUpload" type="file" style="display:none"/>
-
     <br/>
     <div class="progress" id="progress"></div>
-    <div id="canvas-holder" style="width:40%">
-        <canvas id="chart-area" />
+    <div id="output" style="height:200px;overflow:auto"></div>
+    <div id="canvas-holder">
+        <canvas id="taskstats-area-1" />
     </div>
-    <div id="output"></div>
+    <div id="canvas-holder">
+        <canvas id="mpstats-area-1" />
+    </div>
+    <div id="canvas-holder">
+        <canvas id="mpstats-area-2" />
+    </div>
     <script src="main.bundle.js"></script>
   </body>
 </html>

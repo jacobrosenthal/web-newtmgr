@@ -3,7 +3,6 @@ var utility = require('newtmgr').utility;
 var ProgressBar = require('progressbar.js');
 var noble = require('noble/with-bindings')(require('noble/lib/webbluetooth/bindings'));
 var Chart = require('chart.js');
-var stacked100 = require('chartjs-plugin-stacked100');
 
 var options = {
   services: ['8d53dc1d1db74cd3868b8a527460aa84'],
@@ -106,7 +105,11 @@ var taskstats = function(event) {
 };
 
 var mpstats = function(event) {
-  ble.mpstats(g_characteristic, 5000, finish);
+  ble.mpstats(g_characteristic, 5000, function(err, obj){
+    mpstatsCurrentGraph(obj);
+    mpstatsHistoricalGraph(obj);
+    finish(err, obj);
+  });
 };
 
 var logShow = function(event) {
@@ -225,18 +228,68 @@ var taskGraph = function(data){
     freeData.push(data.tasks[prop].stksiz-data.tasks[prop].stkuse);
   }
 
-  new Chart(document.getElementById('chart-area'), {
+  new Chart(document.getElementById('taskstats-area-1'), {
     type: 'horizontalBar',
     data: {
       labels: labels,
       datasets: [
-        { label: "used", data: usedData, backgroundColor: "rgba(48,63,159, 1.0)" },
-        { label: "free",   data: freeData,  backgroundColor: "rgba(64,196,255, 1.0)" }
+        { label: "used", data: usedData, backgroundColor: "rgba(0,0,0, 1.0)" },
+        { label: "free",   data: freeData,  backgroundColor: "rgba(48,63,159, 1.0)" }
       ]
     },
     options: {
+      title: {
+          display: true,
+          text: 'taskstats'
+      },
       scales: {
         xAxes: [{
+          stacked: true,
+          ticks: {
+            display: false
+          },
+          gridLines: {
+            display: false
+          },
+          scaleLabel: {
+            display: false
+          }
+        }]
+      },
+      legend: {
+          display: false
+      }
+    }
+  });
+};
+
+var mpstatsCurrentGraph = function(data){
+  var labels = [];
+  var usedData = [];
+  var freeData = [];
+  for (var prop in data.mpools) {
+    labels.push(prop);
+    usedData.push(data.mpools[prop].nfree);
+    freeData.push(data.mpools[prop].nblks-data.mpools[prop].nfree);
+  }
+
+  new Chart(document.getElementById('mpstats-area-1'), {
+    type: 'horizontalBar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: "used", data: usedData, backgroundColor: "rgba(0,0,0, 1.0)" },
+        { label: "free",   data: freeData,  backgroundColor: "rgba(48,63,159, 1.0)" }
+      ]
+    },
+    options: {
+      title: {
+          display: true,
+          text: 'current mpstats'
+      },
+      scales: {
+        xAxes: [{
+          stacked:true,
           ticks: {
             display: false
           },
@@ -247,23 +300,54 @@ var taskGraph = function(data){
             display: false
           }
         }],
-        yAxes: [{
-          //  ticks: {
-          //   display: false
-          // },
-          // gridLines: {
-          //   display: false
-          // },
-          // scaleLabel: {
-          //   display: false
-          // }
-        }]
       },
       legend: {
           display: false
+      }
+    }
+  });
+};
+
+var mpstatsHistoricalGraph = function(data){
+  var labels = [];
+  var usedData = [];
+  var freeData = [];
+  for (var prop in data.mpools) {
+    labels.push(prop);
+    freeData.push(data.mpools[prop].min);
+    usedData.push(data.mpools[prop].nblks-data.mpools[prop].min);
+  }
+
+  new Chart(document.getElementById('mpstats-area-2'), {
+    type: 'horizontalBar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: "used",   data: usedData,  backgroundColor: "rgba(0,0,0, 1.0)" },
+        { label: "free", data: freeData, backgroundColor: "rgba(48,63,159, 1.0)" },
+      ]
+    },
+    options: {
+      title: {
+          display: true,
+          text: 'historical mpstats'
       },
-      plugins: {
-        stacked100: { enable: true }
+      scales: {
+        xAxes: [{
+          stacked:true,
+          ticks: {
+            display: false
+          },
+          gridLines: {
+            display: false
+          },
+          scaleLabel: {
+            display: false
+          }
+        }],
+      },
+      legend: {
+          display: false
       }
     }
   });
