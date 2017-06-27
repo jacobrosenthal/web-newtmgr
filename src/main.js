@@ -134,7 +134,10 @@ var test = function(event) {
 
 var confirm = function(event) {
   var input = document.getElementById('input');
-  var testHashBuffer = Buffer.from(input.value, "hex");
+  var testHashBuffer = null;
+  if(input.value){
+    testHashBuffer = Buffer.from(input.value, "hex");
+  }
   ble.image.confirm(g_characteristic, testHashBuffer, 5000, finish);
 };
 
