@@ -1,8 +1,12 @@
 'use strict';
 
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 var path = require('path');
 
 module.exports = {
+  plugins: [
+    new UglifyJsPlugin()
+  ],
   entry: {
     main: path.join(__dirname, './src/main.js')
   },

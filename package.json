@@ -22,6 +22,7 @@
     "newtmgr": "^0.8.0",
     "noble": "sandeepmistry/noble#streams",
     "progressbar.js": "^1.0.1",
+    "uglifyjs-webpack-plugin": "^1.1.5",
     "utf-8-validate": "^1.2.1",
     "webpack": "^1.12.11",
     "ws": "^2.2.2"
