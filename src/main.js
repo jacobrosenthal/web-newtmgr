@@ -7,7 +7,7 @@ var Chart = require('chart.js');
 var options = {
   services: ['8d53dc1d1db74cd3868b8a527460aa84'],
   characteristics: ['da2e7828fbce4e01ae9e261174997c48'],
-  name: "nimble-bleprph",
+  namePrefix: "nimble",
 };
 
 var g_peripheral;
@@ -54,7 +54,7 @@ var scan = function(event) {
   var nameInput = document.getElementById('nameInput');
 
   if(nameInput.value){
-    options.name = nameInput.value;
+    options.namePrefix = nameInput.value;
   }
 
   //should probably check and check noble.state. but meh
